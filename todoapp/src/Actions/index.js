@@ -38,3 +38,9 @@ export const editTodoListAction = (id , value) => {
         }
     }
 }
+
+export const deleteAllTodoListAction = () => {
+    return {
+        type: 'Delete All',
+    }
+}

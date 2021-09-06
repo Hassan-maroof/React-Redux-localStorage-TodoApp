@@ -12,7 +12,7 @@ import Tooltip from "material-ui/Tooltip";
 import { FormGroup, FormControlLabel } from "material-ui/Form";
 import styles from './styles';
 
-import { addTodoListAction, deleteTodoListAction, updateAllItemactions, editTodoListAction } from '../Actions/index';
+import { addTodoListAction, deleteTodoListAction, updateAllItemactions, editTodoListAction, deleteAllTodoListAction } from '../Actions/index';
 import Edit from 'material-ui-icons/Edit';
 
 
@@ -26,12 +26,11 @@ function Form() {
 
   const dispatch = useDispatch();
   const [value, setValue] = useState();
-  const [editValue, seteditValue] = useState();
   const handleSubmit = (event) => {
     event.preventDefault();
   };
 
-  console.log('list : ', list);
+  console.log('list after refresh: ', list);
 
 
   useEffect(() => {
@@ -47,38 +46,57 @@ function Form() {
   //   }
   // }, [list])
   const hanldeChange = (event, itemId) => {
-    console.log(itemId)
-    console.log(event.target.value);
     const text = event.target.value;
     dispatch(editTodoListAction(itemId, text))
   }
   const handlLocalState = (list) => {
-    localStorage.setItem("Item", JSON.stringify(list))
-    alert("Your data is Submitted into local storage");
+    if (list && list[0]) {
+      localStorage.setItem("Item", JSON.stringify(list));
+      alert("Your data is Submitted into local storage");
+    }
+    else {
+      alert("List is Empty");
+    }
   }
+  const handleStoreSubmit = (value) => {
+    if (value && value[0]) {
+      dispatch(addTodoListAction(value));
+      setValue(' ');
+    } else {
+      alert("Cannot Add empty itmes");
+    }
+  }
+  const handleDelete = (id) => {
+    dispatch(deleteTodoListAction(id));
+    localStorage.setItem("Item", JSON.stringify(list));
+    console.log("List items deleted", list);
 
+  }
+  const handleDeleteAll = () => {
+    dispatch(deleteAllTodoListAction());
+    localStorage.clear();
+  }
+  if (!list){
+    console.log("Empty list") ;
+  }
   return (
     <div id="main" style={styles.main}>
-       <h1 style={styles.done}>Todo Application</h1>
+      <h1 style={styles.done}>Todo Application</h1>
       <header style={styles.header}>
-     
+
         <form onSubmit={handleSubmit}>
           <div style={styles.todo}>
-          <TextField
-            style={styles.todoitems}
-            type='text'
-            placeholder='Insert Items'
-            value={value}
-            onChange={(event) => setValue(event.target.value)} />
-          
-          <Button style={styles.todoitems} variant="raised" color="primary" onClick={() => {
-            dispatch(addTodoListAction(value));
-            setValue(' ');
-          }}>Add</Button>
-          <Button style={styles.todoitems} variant="raised" color="primary" onClick={() => handlLocalState(list)}>Submit</Button>
+            <TextField
+              style={styles.todoitems}
+              type='text'
+              placeholder='Insert Items'
+              value={value}
+              onChange={(event) => setValue(event.target.value)} />
+
+            <Button style={styles.todoitems} variant="raised" color="primary" onClick={() => handleStoreSubmit(value)}>Add</Button>
           </div>
         </form>
-        
+
       </header>
       <div>
         {
@@ -115,20 +133,28 @@ function Form() {
 
                     </Tooltip>
                     <Tooltip title="Delete task" placement="top">
-                      <IconButton variant="raised" color="primary" onClick={() => dispatch(deleteTodoListAction(elem.id))}><DeleteIcon /></IconButton>
+                      <IconButton variant="raised" color="primary" onClick={() => handleDelete(elem.id)}><DeleteIcon /></IconButton>
                     </Tooltip>
 
                   </div>
                 </Card>
-
-                <form >
-                </form>
 
               </div>
 
             )
           })
         }
+        <div style={styles.todo}>
+          {
+            (list && list[0]) ? <Button style={styles.todoitems} variant="raised" color="primary" onClick={() => handlLocalState(list)}>Submit</Button> : null
+
+          }
+          {
+            (list && list[0]) ? <Button style={styles.todoitems} variant="raised" color="secondary" onClick={() => handleDeleteAll()}>Remove All</Button> : null
+          }
+
+        </div>
+
       </div >
     </div>
   )
